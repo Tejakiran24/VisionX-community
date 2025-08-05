@@ -27,9 +27,9 @@ const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/visionx-community';
     await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000 // 5 second timeout
+      serverSelectionTimeoutMS: 5000, // 5 second timeout
+      retryWrites: true,
+      w: "majority"
     });
     console.log('✅ Connected to MongoDB successfully');
   } catch (err) {
@@ -46,6 +46,16 @@ connectDB();
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/questions', require('./routes/questions'));
 app.use('/api/projects', require('./routes/projects'));
+
+// Serve static files from the React app
+if (process.env.NODE_ENV === 'production') {
+  const path = require('path');
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {
