@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Access to our in-memory database
+// Get db instance from server
 const db = require('../server').db;
 
 // Helper function to find user by email

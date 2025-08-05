@@ -8,8 +8,8 @@ const db = {
   projects: []
 };
 
-// Export db for controllers
-module.exports.db = db;
+// Make db available for other modules
+exports.db = db;
 
 const app = express();
 
