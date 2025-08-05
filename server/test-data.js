@@ -83,11 +83,11 @@ const testProjects = [
   }
 ];
 
+// Export the data with proper IDs and relationships
 module.exports = {
   users: testUsers.map((user, index) => ({
     id: String(index + 1),
-    ...user,
-    password: 'hashedpassword123' // In real app, this would be properly hashed
+    ...user
   })),
   questions: testQuestions.map((question, index) => ({
     id: String(index + 1),
@@ -102,13 +102,3 @@ module.exports = {
     createdAt: new Date().toISOString()
   }))
 };
-  } catch (err) {
-    console.error('Oops, something went wrong:', err);
-  } finally {
-    mongoose.disconnect();
-  }
-}
-
-// Run the function
-console.log('Starting to add test data...');
-addTestData();
