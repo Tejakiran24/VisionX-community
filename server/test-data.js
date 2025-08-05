@@ -92,32 +92,16 @@ module.exports = {
   questions: testQuestions.map((question, index) => ({
     id: String(index + 1),
     ...question,
-    userId: String(Math.floor(Math.random() * users.length) + 1),
+    userId: String(Math.floor(Math.random() * testUsers.length) + 1),
     createdAt: new Date().toISOString()
   })),
   projects: testProjects.map((project, index) => ({
     id: String(index + 1),
     ...project,
-    userId: String(Math.floor(Math.random() * users.length) + 1),
+    userId: String(Math.floor(Math.random() * testUsers.length) + 1),
     createdAt: new Date().toISOString()
   }))
 };
-    const questions = testQuestions.map((q, i) => ({
-      ...q,
-      author: users[i % users.length]._id
-    }));
-    await Question.create(questions);
-    console.log('Added test questions!');
-
-    // Add projects with real user IDs
-    const projects = testProjects.map((p, i) => ({
-      ...p,
-      author: users[i % users.length]._id
-    }));
-    await Project.create(projects);
-    console.log('Added test projects!');
-
-    console.log('Yay! All test data added successfully! 🎉');
   } catch (err) {
     console.error('Oops, something went wrong:', err);
   } finally {
