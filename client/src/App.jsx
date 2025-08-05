@@ -4,6 +4,8 @@ import Questions from './pages/Questions.jsx'
 import Projects from './pages/Projects.jsx'
 import Resources from './pages/Resources.jsx'
 import Navbar from './components/Navbar.jsx'
+import QuestionDetails from './pages/QuestionDetails.jsx'
+import ProjectDetails from './pages/ProjectDetails.jsx'
 
 function App() {
   return (
@@ -13,7 +15,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/questions" element={<Questions />} />
+          <Route path="/questions/:id" element={<QuestionDetails />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
           <Route path="/resources" element={<Resources />} />
         </Routes>
       </main>

@@ -1,4 +1,17 @@
 {
+  "name": "visionx-community",
+  "version": "1.0.0",
+  "description": "VisionX Community Platform",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "client": "cd client && npm start",
+    "install-client": "cd client && npm install",
+    "install-server": "cd server && npm install",
+    "heroku-postbuild": "npm run install-client && npm run build",
+    "build": "cd client && npm run build"
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.11.0",
@@ -11,5 +24,11 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.1",
     "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
