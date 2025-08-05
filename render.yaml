@@ -4,16 +4,17 @@ services:
     env: node
     buildCommand: |
       npm install
+      npm run install-client
       cd client
-      npm install
       npm run build
       cd ..
+      ls -la client/dist
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        value: mongodb+srv://tejakiran:Vision2025@db@cluster0.pwjx2pc.mongodb.net/visionx?retryWrites=true&w=majority
+        value: MONGODB_URI=mongodb+srv://tejakiran:visionx123@cluster0.pwjx2pc.mongodb.net/visionx?retryWrites=true&w=majority
       - key: JWT_SECRET
         value: visionx-aits-2025-secret-key
       - key: CLIENT_URL
