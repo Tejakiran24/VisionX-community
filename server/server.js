@@ -27,11 +27,14 @@ const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI;
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(mongoURI);
+    await mongoose.connect(mongoURI, {
+      dbName: 'visionx'
+    });
     console.log('✅ Connected to MongoDB successfully');
   } catch (err) {
     console.error('❌ MongoDB Connection Error:', err.message);
-    process.exit(1); // Exit on connection error
+    console.error('MongoDB URI:', process.env.MONGODB_URI);
+    setTimeout(connectDB, 5000);
   }
 };
 
@@ -44,12 +47,22 @@ app.use('/api/projects', require('./routes/projects'));
 
 // Serve static files from the React app
 const path = require('path');
-app.use(express.static(path.join(__dirname, '../client/dist')));
 
-// Handle React routing, return all requests to React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
+// API Routes first
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/questions', require('./routes/questions'));
+app.use('/api/projects', require('./routes/projects'));
+
+// Serve static files from React build
+if (process.env.NODE_ENV === 'production') {
+  // Serve any static files
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  
+  // Handle React routing, return all requests to React app
+  app.get('/*', function(req, res) {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {
