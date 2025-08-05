@@ -1,10 +1,4 @@
-const mongoose = require('mongoose');
-const User = require('./models/User');
-const Question = require('./models/Question');
-const Project = require('./models/Project');
-
-mongoose.connect('mongodb://localhost:27017/visionx-community');
-
+// Sample data for in-memory storage
 const testUsers = [
   {
     name: 'Ravi Kumar',
@@ -89,15 +83,25 @@ const testProjects = [
   }
 ];
 
-async function addTestData() {
-  try {
-    await User.deleteMany({});
-    await Question.deleteMany({});
-    await Project.deleteMany({});
-    
-    const users = await User.create(testUsers);
-
-    // Add questions with real user IDs
+module.exports = {
+  users: testUsers.map((user, index) => ({
+    id: String(index + 1),
+    ...user,
+    password: 'hashedpassword123' // In real app, this would be properly hashed
+  })),
+  questions: testQuestions.map((question, index) => ({
+    id: String(index + 1),
+    ...question,
+    userId: String(Math.floor(Math.random() * users.length) + 1),
+    createdAt: new Date().toISOString()
+  })),
+  projects: testProjects.map((project, index) => ({
+    id: String(index + 1),
+    ...project,
+    userId: String(Math.floor(Math.random() * users.length) + 1),
+    createdAt: new Date().toISOString()
+  }))
+};
     const questions = testQuestions.map((q, i) => ({
       ...q,
       author: users[i % users.length]._id

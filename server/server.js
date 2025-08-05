@@ -1,7 +1,12 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config(); // Load environment variables
+
+// In-memory storage
+const db = {
+  users: [],
+  questions: [],
+  projects: []
+};
 
 const app = express();
 
@@ -22,23 +27,13 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
-// Connect to MongoDB Atlas using env variable
-const connectDB = async () => {
-  try {
-    const mongoURI = process.env.MONGODB_URI;
-    console.log('Connecting to MongoDB...');
-    await mongoose.connect(mongoURI, {
-      dbName: 'visionx'
-    });
-    console.log('✅ Connected to MongoDB successfully');
-  } catch (err) {
-    console.error('❌ MongoDB Connection Error:', err.message);
-    console.error('MongoDB URI:', process.env.MONGODB_URI);
-    setTimeout(connectDB, 5000);
-  }
-};
+// Load some initial test data
+const testData = require('./test-data');
+db.questions.push(...testData.questions);
+db.projects.push(...testData.projects);
+db.users.push(...testData.users);
 
-connectDB();
+console.log('✅ In-memory database initialized');
 
 const path = require('path');
 
