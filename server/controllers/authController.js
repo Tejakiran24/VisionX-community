@@ -1,7 +1,13 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const config = require('../config');
+
+// Access to our in-memory database
+const db = require('../server').db;
+
+// Helper function to find user by email
+const findUserByEmail = (email) => {
+  return db.users.find(user => user.email === email);
+};
 
 exports.register = async (req, res) => {
   try {

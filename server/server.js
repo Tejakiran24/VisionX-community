@@ -8,6 +8,9 @@ const db = {
   projects: []
 };
 
+// Export db for controllers
+module.exports.db = db;
+
 const app = express();
 
 // Enable CORS with more specific configuration
@@ -48,8 +51,12 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/dist')));
   
   // Handle React routing, return all requests to React app
-  app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
+  app.get('*', (req, res) => {
+    if (req.url.startsWith('/api')) {
+      res.status(404).send('API endpoint not found');
+      return;
+    }
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }
 
