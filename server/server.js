@@ -40,15 +40,9 @@ const connectDB = async () => {
 
 connectDB();
 
-// API Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/questions', require('./routes/questions'));
-app.use('/api/projects', require('./routes/projects'));
-
-// Serve static files from the React app
 const path = require('path');
 
-// API Routes first
+// API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/questions', require('./routes/questions'));
 app.use('/api/projects', require('./routes/projects'));
@@ -59,8 +53,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/dist')));
   
   // Handle React routing, return all requests to React app
-  app.get('*', function(req, res) {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  app.get('/*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
   });
 }
 
