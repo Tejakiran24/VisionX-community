@@ -1,120 +1,153 @@
-const Question = require('../models/Question');
-const User = require('../models/User');
+// Get db instance from server
+const db = require('../server').db;
 
-exports.createQuestion = async (req, res) => {
+// Helper function to find question by id
+const findQuestionById = (id) => {
+  return db.questions.find(q => q.id === id);
+};
+
+exports.createQuestion = (req, res) => {
   try {
     const { title, body, tags } = req.body;
-
-    const question = new Question({
+    
+    // Create new question
+    const question = {
+      id: String(db.questions.length + 1),
       title,
       body,
-      tags,
-      author: req.user.id
-    });
-
-    await question.save();
-
-    // Add points to user for asking a question
-    await User.findByIdAndUpdate(req.user.id, {
-      $inc: { points: 5 }
-    });
-
-    res.json(question);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-exports.getAllQuestions = async (req, res) => {
-  try {
-    const questions = await Question.find()
-      .sort({ createdAt: -1 })
-      .populate('author', 'name avatar')
-      .populate('answers.author', 'name avatar');
-    res.json(questions);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-exports.getQuestionById = async (req, res) => {
-  try {
-    const question = await Question.findById(req.params.id)
-      .populate('author', 'name avatar')
-      .populate('answers.author', 'name avatar');
-    
-    if (!question) {
-      return res.status(404).json({ msg: 'Question not found' });
-    }
-
-    // Increment view count
-    question.views += 1;
-    await question.save();
-
-    res.json(question);
-  } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Question not found' });
-    }
-    res.status(500).send('Server error');
-  }
-};
-
-exports.addAnswer = async (req, res) => {
-  try {
-    const question = await Question.findById(req.params.id);
-
-    if (!question) {
-      return res.status(404).json({ msg: 'Question not found' });
-    }
-
-    const newAnswer = {
-      body: req.body.body,
-      author: req.user.id
+      tags: tags || [],
+      userId: req.userId,
+      createdAt: new Date().toISOString(),
+      upvotes: [],
+      views: 0,
+      answers: []
     };
 
-    question.answers.unshift(newAnswer);
-    await question.save();
+    // Add to our in-memory database
+    db.questions.push(question);
 
-    // Add points to user for answering
-    await User.findByIdAndUpdate(req.user.id, {
-      $inc: { points: 10 }
-    });
+    // Update user points
+    const user = db.users.find(u => u.id === req.userId);
+    if (user) {
+      user.points = (user.points || 0) + 5;
+    }
 
-    res.json(question.answers);
+    res.json(question);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
 };
 
-exports.upvoteQuestion = async (req, res) => {
+exports.getAllQuestions = (req, res) => {
   try {
-    const question = await Question.findById(req.params.id);
+    // Sort questions by creation date, newest first
+    const questions = [...db.questions].sort((a, b) => 
+      new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    
+    // Add user info to questions
+    const questionsWithUsers = questions.map(q => ({
+      ...q,
+      user: db.users.find(u => u.id === q.userId)
+    }));
+    
+    res.json(questionsWithUsers);
+  } catch (err) {
+    console.error('Get questions error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
 
+exports.getQuestionById = (req, res) => {
+  try {
+    const question = findQuestionById(req.params.id);
     if (!question) {
       return res.status(404).json({ msg: 'Question not found' });
     }
 
-    // Check if already upvoted
-    if (question.upvotes.includes(req.user.id)) {
-      return res.status(400).json({ msg: 'Question already upvoted' });
+    // Increment views
+    question.views += 1;
+
+    // Add user info
+    const questionWithUser = {
+      ...question,
+      user: db.users.find(u => u.id === question.userId),
+      answers: question.answers.map(a => ({
+        ...a,
+        user: db.users.find(u => u.id === a.userId)
+      }))
+    };
+
+    res.json(questionWithUser);
+  } catch (err) {
+    console.error('Get question error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+exports.addAnswer = (req, res) => {
+  try {
+    const question = findQuestionById(req.params.id);
+    if (!question) {
+      return res.status(404).json({ msg: 'Question not found' });
     }
 
-    question.upvotes.push(req.user.id);
-    await question.save();
+    const answer = {
+      id: String(question.answers.length + 1),
+      body: req.body.body,
+      userId: req.userId,
+      createdAt: new Date().toISOString(),
+      upvotes: []
+    };
 
-    // Add points to question author
-    await User.findByIdAndUpdate(question.author, {
-      $inc: { points: 2 }
-    });
+    // Add answer to question
+    question.answers.unshift(answer);
 
-    res.json(question.upvotes);
+    // Add points to user for answering
+    const user = db.users.find(u => u.id === req.userId);
+    if (user) {
+      user.points = (user.points || 0) + 10;
+    }
+
+    // Add user info to the answer
+    const answerWithUser = {
+      ...answer,
+      user: db.users.find(u => u.id === answer.userId)
+    };
+
+    res.json(answerWithUser);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Add answer error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+exports.upvoteQuestion = (req, res) => {
+  try {
+    const question = findQuestionById(req.params.id);
+    if (!question) {
+      return res.status(404).json({ msg: 'Question not found' });
+    }
+
+    // Check if user already upvoted
+    if (question.upvotes.includes(req.userId)) {
+      // Remove upvote
+      question.upvotes = question.upvotes.filter(id => id !== req.userId);
+    } else {
+      // Add upvote
+      question.upvotes.push(req.userId);
+
+      // Add points to question author
+      const author = db.users.find(u => u.id === question.userId);
+      if (author) {
+        author.points = (author.points || 0) + 2;
+      }
+    }
+
+    res.json(question);
+  } catch (err) {
+    console.error('Upvote question error:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 };
