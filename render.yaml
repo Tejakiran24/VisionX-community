@@ -2,13 +2,18 @@ services:
   - type: web
     name: visionx-community
     env: node
-    buildCommand: npm install && cd client && npm install && npm run build && cd ..
+    buildCommand: |
+      npm install
+      cd client
+      npm install
+      npm run build
+      cd ..
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        value: mongodb+srv://tejakiran:mypassword123@cluster0.pwjx2pc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+        value: mongodb+srv://tejakiran:visionx123@cluster0.pwjx2pc.mongodb.net/visionx?retryWrites=true&w=majority
       - key: JWT_SECRET
         value: visionx-aits-2025-secret-key
       - key: CLIENT_URL

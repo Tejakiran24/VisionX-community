@@ -25,18 +25,13 @@ app.get('/api/health', (req, res) => {
 // Connect to MongoDB Atlas using env variable
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/visionx-community';
-    await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 5000, // 5 second timeout
-      retryWrites: true,
-      w: "majority"
-    });
+    const mongoURI = process.env.MONGODB_URI;
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(mongoURI);
     console.log('✅ Connected to MongoDB successfully');
   } catch (err) {
     console.error('❌ MongoDB Connection Error:', err.message);
-    console.log('Retrying connection in 5 seconds...');
-    setTimeout(connectDB, 5000);
-    // Don't exit the process, let it retry
+    process.exit(1); // Exit on connection error
   }
 };
 
@@ -48,14 +43,13 @@ app.use('/api/questions', require('./routes/questions'));
 app.use('/api/projects', require('./routes/projects'));
 
 // Serve static files from the React app
-if (process.env.NODE_ENV === 'production') {
-  const path = require('path');
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-}
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
 
 // Global error handler
 app.use((err, req, res, next) => {
