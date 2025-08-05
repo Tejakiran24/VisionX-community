@@ -16,16 +16,16 @@ router.get('/', projectController.getAllProjects);
 // @route   GET api/projects/:id
 // @desc    Get project by ID
 // @access  Public
-router.get('/:id([0-9]+)', projectController.getProjectById);
+router.get('/:id', projectController.getProjectById);
 
 // @route   POST api/projects/:id/comments
 // @desc    Add a comment to project
 // @access  Private
-router.post('/:id([0-9]+)/comments', auth, projectController.addComment);
+router.post('/:id/comments', auth, projectController.addComment);
 
 // @route   PUT api/projects/:id/like
 // @desc    Like a project
 // @access  Private
-router.put('/:id([0-9]+)/like', auth, projectController.likeProject);
+router.put('/:id/like', auth, projectController.likeProject);
 
 module.exports = router;
