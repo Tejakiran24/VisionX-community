@@ -51,12 +51,46 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/dist')));
   
   // Handle React routing, return all requests to React app
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+
+  // Handle other routes
+  app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+  
+  app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+  
+  app.get('/questions', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+  
+  app.get('/questions/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+  
+  app.get('/projects', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+  
+  app.get('/projects/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+  
+  app.get('/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+
+  // Handle 404 for any other routes
   app.get('*', (req, res) => {
     if (req.url.startsWith('/api')) {
-      res.status(404).send('API endpoint not found');
-      return;
+      res.status(404).json({ msg: 'API endpoint not found' });
+    } else {
+      res.status(404).sendFile(path.join(__dirname, '../client/dist/index.html'));
     }
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }
 
