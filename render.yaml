@@ -1,16 +1,23 @@
 services:
   - type: web
-    name: visionx-community
+    name: visionx-community-1
     env: node
-    buildCommand: |
-      cd client
-      npm install
-      npm run build
-      cd ../server
-      npm install
-    startCommand: cd server && node server.js
+    buildCommand: npm install
+    startCommand: node server/server.js
     envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
       - key: NODE_ENV
         value: production
-      - key: JWT_SECRET
-        value: visionx-aits-2025-secret-key
+      - key: CLIENT_URL
+        value: https://visionx-community-frontend.onrender.com
+
+  - type: static
+    name: visionx-community-frontend
+    buildCommand: cd client && npm install && npm run build
+    publishDir: client/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://visionx-community-1.onrender.com/api
