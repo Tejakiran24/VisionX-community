@@ -1,23 +1,47 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../features/authSlice';
+import { login, register } from '../features/authSlice';
 import { Link, useNavigate } from 'react-router-dom';
 
-function Login() {
+function Login({ isRegister = false }) {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
-
-  const { loading, error } = useSelector(state => state.auth);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { error } = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await dispatch(login(formData));
-    if (!result.error) {
-      navigate('/');
+    setIsSubmitting(true);
+    
+    try {
+      if (isRegister) {
+        if (formData.password !== formData.confirmPassword) {
+          console.error('❌ Passwords do not match');
+          setIsSubmitting(false);
+          return;
+        }
+        
+        const { confirmPassword, ...registerData } = formData;
+        await dispatch(register(registerData)).unwrap();
+        // After successful registration, try to log in automatically
+        await dispatch(login({ email: registerData.email, password: registerData.password })).unwrap();
+        navigate('/');
+      } else {
+        const { email, password } = formData;
+        await dispatch(login({ email, password })).unwrap();
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -30,12 +54,12 @@ function Login() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            {isRegister ? 'Create a new account' : 'Sign in to your account'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              create a new account
+            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <Link to={isRegister ? "/login" : "/register"} className="font-medium text-blue-600 hover:text-blue-500">
+              {isRegister ? 'Sign in' : 'Create an account'}
             </Link>
           </p>
         </div>
@@ -48,6 +72,22 @@ function Login() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
+            {isRegister && (
+              <div>
+                <label htmlFor="name" className="sr-only">Full Name</label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  autoComplete="name"
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
             <div>
               <label htmlFor="email" className="sr-only">Email address</label>
               <input
@@ -55,7 +95,10 @@ function Login() {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                autoComplete="username"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${
+                  !isRegister ? 'rounded-t-md' : ''
+                } focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -68,21 +111,59 @@ function Login() {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                autoComplete={isRegister ? "new-password" : "current-password"}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${
+                  !isRegister ? 'rounded-b-md' : ''
+                } focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
               />
             </div>
+            {isRegister && (
+              <div>
+                <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  autoComplete="new-password"
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={isSubmitting}
+              className={`group relative w-full flex justify-center items-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              <div className="flex items-center justify-center">
+                {isSubmitting && (
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                <span>
+                  {isSubmitting
+                    ? isRegister 
+                      ? 'Creating Account...' 
+                      : 'Signing In...'
+                    : isRegister 
+                      ? 'Create Account' 
+                      : 'Sign In'
+                  }
+                </span>
+              </div>
             </button>
           </div>
         </form>

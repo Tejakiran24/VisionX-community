@@ -15,12 +15,18 @@ function Home() {
             A safe space for developers to learn, share, and grow together
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+            <Link
+              to="/questions/new"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 inline-block text-center"
+            >
               Ask a Question
-            </button>
-            <button className="bg-white text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg border border-gray-200 transform hover:-translate-y-0.5">
+            </Link>
+            <Link
+              to="/projects/new"
+              className="bg-white text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg border border-gray-200 transform hover:-translate-y-0.5 inline-block text-center"
+            >
               Share Project
-            </button>
+            </Link>
           </div>
         </div>
       </div>

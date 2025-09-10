@@ -1,7 +1,12 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../features/authSlice';
 
 function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector(state => state.auth);
   
   const isActive = (path) => {
     return location.pathname === path;
@@ -76,12 +81,30 @@ function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </Link>
-            <Link
-              to="/login"
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors shadow-sm hover:shadow"
-            >
-              Sign In
-            </Link>
+            
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-700">
+                  Welcome, {user?.name}
+                </span>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate('/login');
+                  }}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors shadow-sm hover:shadow"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors shadow-sm hover:shadow"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>

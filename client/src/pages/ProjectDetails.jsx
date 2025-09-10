@@ -10,6 +10,12 @@ const ProjectDetails = () => {
 
   useEffect(() => {
     const fetchProject = async () => {
+      // Skip API call if the ID is "new"
+      if (id === 'new') {
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await api.get(`/projects/${id}`);
         setProject(res.data);

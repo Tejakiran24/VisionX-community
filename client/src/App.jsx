@@ -1,11 +1,14 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Questions from './pages/Questions.jsx'
+import QuestionForm from './pages/QuestionForm.jsx'
 import Projects from './pages/Projects.jsx'
+import ProjectForm from './pages/ProjectForm.jsx'
 import Resources from './pages/Resources.jsx'
 import Navbar from './components/Navbar.jsx'
 import QuestionDetails from './pages/QuestionDetails.jsx'
 import ProjectDetails from './pages/ProjectDetails.jsx'
+import Login from './pages/Login.jsx'
 
 function App() {
   return (
@@ -15,10 +18,13 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/questions" element={<Questions />} />
+          <Route path="/questions/new" element={<QuestionForm />} />
           <Route path="/questions/:id" element={<QuestionDetails />} />
           <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
+          <Route path="/projects/new" element={<ProjectForm />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Login isRegister={true} />} />
         </Routes>
       </main>
       <footer className="bg-white border-t border-gray-100 py-6">

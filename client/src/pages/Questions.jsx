@@ -7,13 +7,33 @@ function Questions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const HeaderSection = () => (
+    <div className="flex justify-between items-center mb-8">
+      <h1 className="text-3xl font-bold">Questions</h1>
+      <Link 
+        to="/questions/new"
+        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Ask Question
+      </Link>
+    </div>
+  );
+
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
+        console.log('🔄 Fetching questions...');
         const response = await api.get('/questions');
+        console.log('✅ Questions response:', response.data);
         setQuestions(response.data);
         setLoading(false);
       } catch (err) {
+        console.error('❌ Error fetching questions:', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status,
+          config: err.config
+        });
         setError(err.message);
         setLoading(false);
       }

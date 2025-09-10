@@ -1,118 +1,66 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
-// In-memory storage
-const db = {
-  users: [],
-  questions: [],
-  projects: []
-};
-
-// Make db available for other modules
-exports.db = db;
+const mongoose = require('mongoose');
+const connectDB = require('./config/db');
 
 const app = express();
 
-// Enable CORS with more specific configuration
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(express.json({ limit: '10mb' }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://visionx-community.onrender.com'
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '10mb' }));
+// Import routes
+const authRoutes = require('./routes/auth');
+const questionRoutes = require('./routes/questions');
+const projectRoutes = require('./routes/projects');
 
-// Health check route
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+// Use routes
+app.use('/api/auth', authRoutes);
+app.use('/api/questions', questionRoutes);
+app.use('/api/projects', projectRoutes);
+
+// Health check
+app.get('/api/health', (_, res) => {
+  res.json({ 
+    status: 'ok',
+    environment: process.env.NODE_ENV,
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
 });
 
-// Load some initial test data
-const testData = require('./test-data');
-db.questions.push(...testData.questions);
-db.projects.push(...testData.projects);
-db.users.push(...testData.users);
-
-console.log('✅ In-memory database initialized');
-
-const path = require('path');
-
-// API Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/questions', require('./routes/questions'));
-app.use('/api/projects', require('./routes/projects'));
-
-// Serve static files from React build
-if (process.env.NODE_ENV === 'production') {
-  // Serve any static files
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  
-  // Handle React routing, return all requests to React app
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-
-  // Handle other routes
-  app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-  
-  app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-  
-  app.get('/questions', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-  
-  app.get('/questions/:id', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-  
-  app.get('/projects', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-  
-  app.get('/projects/:id', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-  
-  app.get('/profile', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-
-  // Handle 404 for any other routes
-  app.get('*', (req, res) => {
-    if (req.url.startsWith('/api')) {
-      res.status(404).json({ msg: 'API endpoint not found' });
-    } else {
-      res.status(404).sendFile(path.join(__dirname, '../client/dist/index.html'));
-    }
-  });
-}
-
-// Global error handler
+// Error handler
 app.use((err, req, res, next) => {
-  console.error('❌ Error:', err.stack);
+  console.error('❌ Error:', err);
+  
+  // Handle route parsing errors
+  if (err instanceof TypeError && err.message.includes('Missing parameter')) {
+    return res.status(400).json({ 
+      message: 'Invalid route parameters',
+      path: req.path,
+      method: req.method
+    });
+  }
+
+  // Handle other errors
   res.status(500).json({
-    error: 'Server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
+    path: req.path,
+    method: req.method,
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
-
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use`);
-  } else {
-    console.error('❌ Server error:', err);
-  }
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });

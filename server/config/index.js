@@ -3,12 +3,11 @@
 
 // I'm learning about environment variables, but for now keeping it simple
 const config = {
-  // My local MongoDB database
-  mongoURI: 'mongodb://localhost:27017/visionx-community',
+  // MongoDB Atlas connection string
+  mongoURI: process.env.MONGODB_URI || 'mongodb+srv://Tejakiran:Teja2004@cluster0.xswame2.mongodb.net/visionx-community?retryWrites=true&w=majority',
   
-  // Secret key for JSON Web Tokens (learned about this in cybersecurity class!)
-  // Note to self: In real projects, this should be in environment variables
-  jwtSecret: 'aits-visionx-2025-secret',
+  // Secret key for JSON Web Tokens
+  jwtSecret: process.env.JWT_SECRET || 'aits-visionx-2025-secret',
   
   // Token expires in 24 hours
   jwtExpiration: '24h',

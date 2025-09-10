@@ -13,6 +13,13 @@ router.post('/register', authController.register);
 // @access  Public
 router.post('/login', authController.login);
 
+// @route   GET api/auth/test
+// @desc    Test auth route
+// @access  Public
+router.get('/test', (req, res) => {
+  res.json({ msg: 'Auth route working' });
+});
+
 // @route   GET api/auth/me
 // @desc    Get current user
 // @access  Private
