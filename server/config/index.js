@@ -1,13 +1,12 @@
 // My project configuration file
 // AITS Web Development Project - 2025
 
-// I'm learning about environment variables, but for now keeping it simple
 const config = {
-  // MongoDB Atlas connection string
-  mongoURI: process.env.MONGODB_URI || 'mongodb+srv://Tejakiran:Teja2004@cluster0.xswame2.mongodb.net/visionx-community?retryWrites=true&w=majority',
+  // MongoDB Atlas connection string (must be set in environment variables)
+  mongoURI: process.env.MONGODB_URI,
   
-  // Secret key for JSON Web Tokens
-  jwtSecret: process.env.JWT_SECRET || 'aits-visionx-2025-secret',
+  // Secret key for JSON Web Tokens (must be set in environment variables)
+  jwtSecret: process.env.JWT_SECRET,
   
   // Token expires in 24 hours
   jwtExpiration: '24h',
